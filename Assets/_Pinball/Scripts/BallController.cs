@@ -4,7 +4,6 @@ using SgLib;
 
 public class BallController : MonoBehaviour
 {
-
     private GameManager gameManager;
     private SpriteRenderer spriteRenderer;
     private bool isChecked;

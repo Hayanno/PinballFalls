@@ -3,6 +3,7 @@ using System.Collections;
 using UnityEngine.UI;
 using SgLib;
 using System.Collections.Generic;
+using UnityEngine.EventSystems;
 
 public enum GameState
 {
@@ -57,7 +58,9 @@ public class GameManager : MonoBehaviour
     public GameObject targetPrefab;
     public GameObject ushape;
     public GameObject background;
+    public GameObject backgroundImage;
     public GameObject fence;
+    public GameObject waddlesPicker;
     [HideInInspector]
     public GameObject currentTargetPoint;
     [HideInInspector]
@@ -69,12 +72,15 @@ public class GameManager : MonoBehaviour
 
     [Header("Gameplay Config")]
     public Color[] backgroundColor;
+    public Sprite[] backgroundsImage;
+    public Sprite[] skins;
     public float torqueForce;
     public int scoreToIncreaseDifficulty = 10;
     public float targetAliveTime = 20;
     public float targetAliveTimeDecreaseValue = 2;
     public int minTargetAliveTime = 3;
     public int scoreToAddedBall = 15;
+    public int nbrObstacleAtTheSameTime = 3;
 
     private List<GameObject> listBall = new List<GameObject>();
     private Rigidbody2D leftFlipperRigid;
@@ -84,6 +90,7 @@ public class GameManager : MonoBehaviour
     private SpriteRenderer fenceSpriteRenderer;
     private SpriteRenderer leftFlipperSpriteRenderer;
     private SpriteRenderer rightFlipperSpriteRenderer;
+    private SpriteRenderer backgroundImageSpriteRenderer;
     private int obstacleCounter = 0;
     private bool stopProcessing;
    
@@ -101,6 +108,7 @@ public class GameManager : MonoBehaviour
         fenceSpriteRenderer = fence.GetComponent<SpriteRenderer>();
         leftFlipperSpriteRenderer = leftFlipper.GetComponent<SpriteRenderer>();
         rightFlipperSpriteRenderer = rightFlipper.GetComponent<SpriteRenderer>();
+        backgroundImageSpriteRenderer = backgroundImage.GetComponent<SpriteRenderer>();
 
         //Change color of backgorund, ushape, fence, flippers
         Color color = backgroundColor[Random.Range(0, backgroundColor.Length)];
@@ -190,6 +198,7 @@ public class GameManager : MonoBehaviour
     public void CreateBall()
     {
         GameObject ball = Instantiate(ballPrefab, ballPoint.transform.position, Quaternion.identity) as GameObject;
+        ball.GetComponent<SpriteRenderer>().sprite = GetSkin();
         listBall.Add(ball);
     }
 
@@ -206,10 +215,12 @@ public class GameManager : MonoBehaviour
 
             //Random new goldPoint and create new gold, then start processing
             GameObject goldPoint = targetPointManager.transform.GetChild(Random.Range(0, targetPointManager.transform.childCount)).gameObject;
+
             while (currentTargetPoint == goldPoint)
             {
                 goldPoint = targetPointManager.transform.GetChild(Random.Range(0, targetPointManager.transform.childCount)).gameObject;
             }
+
             goldPoint.SetActive(true);
             currentTargetPoint = goldPoint;
             Vector2 goldPos = Camera.main.ScreenToWorldPoint(currentTargetPoint.transform.position);
@@ -255,18 +266,19 @@ public class GameManager : MonoBehaviour
         {
             //Change background element color
             Color color = backgroundColor[Random.Range(0, backgroundColor.Length)];
+            Sprite sprite = backgroundsImage[Random.Range(0, backgroundsImage.Length)];
             ushapeSpriteRenderer.color = color;
             backgroundSpriteRenderer.color = color;
             fenceSpriteRenderer.color = color;
             leftFlipperSpriteRenderer.color = color;
             rightFlipperSpriteRenderer.color = color;
+            backgroundImageSpriteRenderer.sprite = sprite;
 
-            //Enable obstacles
-            if (obstacleCounter < obstacleManager.transform.childCount)
-            {
-                obstacleManager.transform.GetChild(obstacleCounter).gameObject.SetActive(true);
-                obstacleCounter++;
-            }
+            foreach (Transform child in obstacleManager.transform)
+                child.gameObject.SetActive(false);
+
+            for (int i = 0; i < nbrObstacleAtTheSameTime; i++)
+                obstacleManager.transform.GetChild(Random.Range(0, obstacleManager.transform.childCount)).gameObject.SetActive(true);
 
             //Update processing time
             if (targetAliveTime > minTargetAliveTime)
@@ -283,6 +295,15 @@ public class GameManager : MonoBehaviour
         {
             CreateBall();
         }
+    }
+
+    public void ChangeSkin(int index)
+    {
+        PlayerPrefs.SetInt("SkinNum", index);
+    }
+
+    public Sprite GetSkin() {
+        return skins[PlayerPrefs.GetInt("SkinNum") - 1];
     }
 
     IEnumerator Processing()
@@ -303,6 +324,7 @@ public class GameManager : MonoBehaviour
         {
             SoundManager.Instance.PlaySound(SoundManager.Instance.gameOver);
             gameOver = true;
+
             for (int i = 0; i < listBall.Count; i++)
             {
                 listBall[i].GetComponent<BallController>().Exploring();
@@ -312,11 +334,11 @@ public class GameManager : MonoBehaviour
 
             ParticleSystem particle = Instantiate(hitGold, currentTarget.transform.position, Quaternion.identity) as ParticleSystem;
             var main = particle.main;
+
             main.startColor = currentTarget.gameObject.GetComponent<SpriteRenderer>().color;
             particle.Play();
             Destroy(particle.gameObject, 1f);
             Destroy(currentTarget.gameObject);
-
             GameOver();
         }      
     }
