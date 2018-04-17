@@ -91,8 +91,8 @@ public class GameManager : MonoBehaviour
     private SpriteRenderer leftFlipperSpriteRenderer;
     private SpriteRenderer rightFlipperSpriteRenderer;
     private SpriteRenderer backgroundImageSpriteRenderer;
-    private int obstacleCounter = 0;
     private bool stopProcessing;
+    private const string SKIN_NUM = "SKIN_NUM";
    
     // Use this for initialization
     void Start()
@@ -295,15 +295,21 @@ public class GameManager : MonoBehaviour
         {
             CreateBall();
         }
+
+        // Check if score is equal to Elea's age
+        if (ScoreManager.Instance.Score == 14)
+        {
+
+        }
     }
 
     public void ChangeSkin(int index)
     {
-        PlayerPrefs.SetInt("SkinNum", index);
+        PlayerPrefs.SetInt(SKIN_NUM, index);
     }
 
     public Sprite GetSkin() {
-        return skins[PlayerPrefs.GetInt("SkinNum") - 1];
+        return skins[PlayerPrefs.GetInt(SKIN_NUM, 1) - 1];
     }
 
     IEnumerator Processing()

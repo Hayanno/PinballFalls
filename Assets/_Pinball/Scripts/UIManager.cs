@@ -50,16 +50,16 @@ public class UIManager : MonoBehaviour
         scoreInScoreBg.text = ScoreManager.Instance.Score.ToString();
 
 
+        /*
         // Show or hide premium buttons
         bool enablePremium = PremiumFeaturesManager.Instance.enablePremiumFeatures;
-        /*
         leaderboardBtn.SetActive(enablePremium);
         achievementBtn.SetActive(enablePremium);
         removeAdsBtn.SetActive(enablePremium);
         restorePurchaseBtn.SetActive(enablePremium);
         shareBtn.SetActive(false);  // share button only shows when game over
         */
-            
+
 
         if (!firstLoad)
         {
@@ -106,8 +106,8 @@ public class UIManager : MonoBehaviour
         score.gameObject.SetActive(false);
         scoreInScoreBg.text = ScoreManager.Instance.Score.ToString();
 
-        bool enablePremium = PremiumFeaturesManager.Instance.enablePremiumFeatures;
         /*
+        bool enablePremium = PremiumFeaturesManager.Instance.enablePremiumFeatures;
         leaderboardBtn.SetActive(enablePremium);
         achievementBtn.SetActive(enablePremium);
         removeAdsBtn.SetActive(enablePremium);
